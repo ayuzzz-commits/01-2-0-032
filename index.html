@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>🎨 Miori</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Mitr', 'sans-serif'],
+                        cute: ['Mitr', 'sans-serif'],
+                    },
+                    colors: {
+                        p_bg: '#FFFDF9',
+                        p_pink: '#FFB6C1',
+                        p_pink_light: '#FFD1DC',
+                        p_pink_dark: '#E07A5F',
+                        p_yellow: '#FFF3B0',
+                        p_yellow_dark: '#F4A261',
+                        p_text: '#6C5CE7'
+                    },
+                    boxShadow: {
+                        'pop': '4px 4px 0px rgba(255, 182, 193, 0.4)',
+                        'pop-yellow': '4px 4px 0px rgba(244, 162, 97, 0.4)',
+                        'pop-cute': '4px 4px 0px rgba(224, 122, 95, 0.3)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #FFF0F3;
+            display: flex;
+            justify-content: center;
+            color: #5A4B41;
+            margin: 0;
+            min-height: 100vh;
+        }
+
+        #app-container {
+            width: 100%;
+            max-width: 430px;
+            min-height: 100vh;
+            background-color: #FFFDF9;
+            background-image: radial-gradient(#FFD1DC 1.5px, transparent 1.5px);
+            background-size: 20px 20px;
+            position: relative;
+            overflow-x: hidden;
+            box-shadow: 0 0 30px rgba(224, 122, 95, 0.2);
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(3deg); }
+        }
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-float { animation: float 3s ease-in-out infinite; }
+        .animate-spin-slow { animation: spin-slow 12s linear infinite; }
+
+        .pop-card { transition: transform 0.2s ease; }
+        .pop-card:active { transform: scale(0.97); }
+
+        ::-webkit-scrollbar { display: none; }
+
+        @keyframes driftRight {
+            0% { left: -20%; transform: translateY(0) rotate(0deg); opacity: 0; }
+            15% { opacity: 0.8; }
+            85% { opacity: 0.8; }
+            100% { left: 120%; transform: translateY(-40px) rotate(180deg); opacity: 0; }
+        }
+        .animate-drift-r { animation: driftRight 16s linear infinite; }
+
+        @media (prefers-reduced-motion: reduce) {
+            .animate-float, .animate-spin-slow, .animate-drift-r { animation: none; }
+        }
+    </style>
+</head>
+<body class="antialiased font-sans">
+
+    <!-- Mobile Wrapper -->
+    <div id="app-container" class="pb-16">
+
+        <!-- Background Doodles -->
+        <div class="absolute top-12 animate-drift-r text-p_pink text-3xl pointer-events-none z-0"><i class="fa-solid fa-heart"></i></div>
+        <div class="absolute top-80 animate-drift-r text-p_yellow_dark text-2xl pointer-events-none z-0" style="animation-delay: -5s;"><i class="fa-solid fa-star"></i></div>
+
+        <!-- 🎵 เครื่องเล่นแผ่นเสียงย้ายมามุมล่างซ้าย (ขนาดเล็กลง) -->
+        <div class="fixed bottom-4 left-4 z-40 flex items-center gap-1.5 bg-white/90 backdrop-blur-md p-1 pl-1.5 pr-2.5 rounded-full shadow-md border border-p_pink_light">
+            <button id="music-toggle-btn" onclick="toggleMusic()" class="w-6 h-6 rounded-full bg-p_pink flex items-center justify-center text-white shadow-sm focus:outline-none" aria-label="เล่น/หยุดเพลง">
+                <i id="music-icon" class="fa-solid fa-compact-disc text-xs"></i>
+            </button>
+            <span class="text-[10px] font-cute font-bold text-p_pink_dark">BGM</span>
+            <div id="yt-player-container" style="position:absolute; width:1px; height:1px; overflow:hidden; opacity:0; pointer-events:none;">
+                <div id="yt-player"></div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main class="px-5 pt-8 relative z-10">
+
+            <!-- 1. โลโก้ร้านตรงกลาง + ป้าย Open/Close + รายละเอียดร้านด้านล่าง (กดโลโก้เพื่อล็อกอินแอดมิน) -->
+            <div class="bg-white rounded-[24px] p-5 shadow-pop border-2 border-p_pink_light mb-6 text-center relative">
+                
+                <!-- โลโก้อยู่ตรงกลาง (กดเพื่อเข้าหลังบ้าน) -->
+                <div class="flex justify-center mb-3">
+                    <button onclick="openAdmin()" class="relative group focus:outline-none" title="คลิกเพื่อเข้าสู่ระบบหลังบ้าน">
+                        <div class="w-24 h-24 rounded-full bg-p_yellow flex-shrink-0 flex items-center justify-center border-4 border-p_pink_light overflow-hidden shadow-md relative group-hover:scale-105 transition duration-200">
+                            <img id="logo-image-display" src="" class="w-full h-full object-cover hidden rounded-full" alt="โลโก้ร้าน">
+                            <i id="logo-icon-default" class="fa-solid fa-store text-4xl text-p_pink_dark animate-float"></i>
+                        </div>
+                        
+                        <!-- 🟢🔴 ป้ายบอกเวลาเปิด-ปิดร้าน (มุมเล็กๆ ของโลโก้) -->
+                        <div id="shop-status-badge" class="absolute bottom-0 right-0 bg-green-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-sm flex items-center gap-1">
+                            <span id="shop-status-dot" class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
+                            <span id="shop-status-text">OPEN</span>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- รายละเอียดร้านย้ายมาอยู่ด้านล่างโลโก้ -->
+                <div>
+                    <h1 class="font-cute text-2xl font-bold text-p_pink_dark leading-tight flex items-center justify-center gap-1">
+                        Miori 🎀
+                    </h1>
+                    <div id="shop-info-display" class="text-[12px] text-gray-600 mt-2 leading-relaxed font-medium whitespace-pre-line">
+                        ร้านมิโอริ ยินดีต้อนรับค่า
+                        บริการรับทำเว็บไซต์ร้านค้า
+                        รับทำลายน้ำเริ่มต้น 39+
+                        รับทำป้าย 59+
+                        สอบถามรายละเอียดเพิ่มเติมทักได้เลยน้า
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🖼️ รูปแบนเนอร์ขนาด 1122 × 495 Pixel -->
+            <div class="mb-6 rounded-[20px] overflow-hidden shadow-pop border-2 border-p_yellow_dark bg-p_yellow relative">
+                <div id="banner-bg" class="w-full aspect-[1122/495] bg-cover bg-center flex items-center justify-center" style="background-image: url('https://placehold.co/1122x495/FFD1DC/E07A5F?text=Banner+1122x495+Pixel');">
+                </div>
+            </div>
+
+            <!-- 🛍️ ตัวอย่างสินค้า 6 ช่อง (2 แถว x 3 คอลัมน์) -->
+            <div class="mb-6 text-center">
+                <div class="inline-block bg-p_yellow text-p_pink_dark font-cute font-bold px-4 py-1.5 rounded-full mb-3 text-sm shadow-sm border border-p_yellow_dark">
+                    <i class="fa-solid fa-bag-shopping"></i> ตัวอย่างงาน
+                </div>
+                <div id="product-grid" class="grid grid-cols-3 gap-2.5 text-left"></div>
+            </div>
+
+            <!-- 3. ระบบเช็คคิวงาน -->
+            <div class="mb-6">
+                <button onclick="openQueue()" class="w-full bg-gradient-to-r from-white via-[#FFF8F9] to-white rounded-[24px] p-4 flex items-center justify-between pop-card shadow-pop-cute border-2 border-p_pink_light hover:border-p_pink transition relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 w-16 h-16 bg-p_pink_light/20 rounded-full blur-md group-hover:scale-150 transition duration-500"></div>
+                    <div class="flex items-center gap-3 relative z-10">
+                        <div class="w-11 h-11 rounded-2xl bg-p_pink/15 border border-p_pink/30 flex items-center justify-center text-p_pink_dark flex-shrink-0">
+                            <i class="fa-solid fa-list-check text-xl animate-float"></i>
+                        </div>
+                        <div class="text-left">
+                            <div class="flex items-center gap-1.5">
+                                <span class="font-cute font-bold text-base text-p_pink_dark">เช็คคิวงานปัจจุบัน</span>
+                                <span id="queue-badge-count" class="bg-p_pink text-white font-cute font-bold text-[10px] px-2 py-0.5 rounded-full shadow-sm">0 คิว</span>
+                            </div>
+                            <p class="text-[11px] font-medium text-gray-500">ตรวจสอบสถานะและความก้าวหน้างาน</p>
+                        </div>
+                    </div>
+                    <div class="w-8 h-8 rounded-full bg-p_pink_light/40 flex items-center justify-center text-p_pink_dark group-hover:bg-p_pink group-hover:text-white transition">
+                        <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </div>
+                </button>
+            </div>
+
+            <!-- วิธีการสั่งงาน -->
+            <div class="space-y-4 mb-6">
+                <div class="bg-white rounded-[20px] p-4 shadow-pop text-gray-700 border border-p_pink_light">
+                    <h3 class="font-cute text-lg font-bold mb-3 text-p_pink_dark"><i class="fa-solid fa-cart-shopping text-p_pink"></i> วิธีการสั่งงาน</h3>
+                    <ul class="space-y-2.5 text-[12px] font-medium leading-snug">
+                        <li class="flex gap-2">
+                            <span class="bg-p_pink_light text-p_pink_dark w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 font-cute text-[10px]">1</span>
+                            <p>แจ้งแนวป้ายและจำนวนที่ต้องการ</p>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="bg-p_pink_light text-p_pink_dark w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 font-cute text-[10px]">2</span>
+                            <p>เลือกตูน/บล็อค (ถ้าใส่ตูน ร้านแต่งให้เข้ากันเอง)</p>
+                        </li>
+                        <li class="flex gap-2">
+                            <span class="bg-p_pink_light text-p_pink_dark w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 font-cute text-[10px]">3</span>
+                            <p><strong class="text-p_pink_dark">บรีฟงานให้ชัดเจน</strong> (แนวป้าย โทนสี สีตูน)</p>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- บล็อก ตูน ของตกแต่ง / ผลงาน -->
+                <div>
+                    <div class="inline-block bg-p_yellow text-p_pink_dark font-cute font-bold px-4 py-1.5 rounded-full mb-3 text-sm shadow-sm border border-p_yellow_dark">
+                        Gallery [ Block/Toon/Descor ]
+                    </div>
+                    <div class="grid grid-cols-3 gap-2.5">
+                        <a href="#" class="bg-white rounded-[16px] p-2 text-center pop-card shadow-pop flex flex-col h-full border border-p_pink_light">
+                            <div class="bg-p_pink_light rounded-lg aspect-square mb-1.5 flex items-center justify-center text-xl text-p_pink_dark">
+                                <i class="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                            <h4 class="font-cute font-bold text-p_pink_dark text-[10px] leading-tight mb-1">˚₊‧꒰ა Block ໒꒱ ‧₊˚</h4>
+                        </a>
+                        <a href="#" class="bg-white rounded-[16px] p-2 text-center pop-card shadow-pop flex flex-col h-full border border-p_pink_light">
+                            <div class="bg-p_yellow rounded-lg aspect-square mb-1.5 flex items-center justify-center text-xl text-p_pink_dark">
+                                <i class="fa-solid fa-face-smile-beam"></i>
+                            </div>
+                            <h4 class="font-cute font-bold text-p_pink_dark text-[10px] leading-tight mb-1">˚₊‧꒰ა Toon ໒꒱ ‧₊˚</h4>
+                        </a>
+                        <a href="#" class="bg-white rounded-[16px] p-2 text-center pop-card shadow-pop flex flex-col h-full border border-p_pink_light">
+                            <div class="bg-p_pink rounded-lg aspect-square mb-1.5 flex items-center justify-center text-xl text-white">
+                                <i class="fa-solid fa-palette"></i>
+                            </div>
+                            <h4 class="font-cute font-bold text-p_pink_dark text-[10px] leading-tight mb-1">˚₊‧꒰ა Descor ໒꒱ ‧₊˚</h4>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. บล็อกรีวิวจากลูกค้า -->
+            <div class="bg-white rounded-[24px] p-5 shadow-pop border-2 border-p_pink_light mb-6">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="font-cute text-lg font-bold text-p_pink_dark"><i class="fa-solid fa-star text-p_yellow_dark"></i> รีวิวจากลูกค้า</h3>
+                    <button onclick="openModal('review-modal')" class="bg-p_pink text-white font-cute font-bold px-3 py-1.5 rounded-full text-xs shadow-sm hover:bg-p_pink_dark active:scale-95 transition flex items-center gap-1">
+                        <i class="fa-solid fa-pen-to-square"></i> เขียนรีวิว
+                    </button>
+                </div>
+
+                <div id="approved-reviews-list" class="space-y-3 mt-4 max-h-[360px] overflow-y-auto pr-1"></div>
+            </div>
+
+            <!-- 📱 ช่องทางติดต่อ -->
+            <div class="flex justify-center items-center gap-5 mb-6">
+                <a href="#" target="_blank" rel="noopener" aria-label="Facebook" class="w-12 h-12 rounded-full border-2 border-p_pink_dark flex items-center justify-center text-p_pink_dark text-xl hover:text-p_yellow_dark hover:border-p_yellow_dark transition shadow-sm bg-white">
+                    <i class="fa-brands fa-facebook-f"></i>
+                </a>
+                <a href="#" target="_blank" rel="noopener" aria-label="LINE" class="w-12 h-12 rounded-full border-2 border-p_pink_dark flex items-center justify-center text-p_pink_dark text-xl hover:text-p_yellow_dark hover:border-p_yellow_dark transition shadow-sm bg-white">
+                    <i class="fa-brands fa-line"></i>
+                </a>
+            </div>
+
+            <!-- Footer -->
+            <footer class="text-center py-4 border-t border-p_pink_light text-xs text-gray-500 font-cute">
+                <p>miori shop &copy; 2026 💕 ยินดีให้บริการค่ะ</p>
+            </footer>
+
+        </main>
+    </div>
+
+    <!-- ==================== MODALS / POPUPS ==================== -->
+
+    <!-- Modal 1: เช็คคิวงาน -->
+    <div id="queue-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-[#FFFDF9] rounded-[28px] w-full max-w-sm p-5 border-2 border-p_pink_light shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('queue-modal')" class="absolute top-4 right-4 w-8 h-8 rounded-full bg-white text-p_pink_dark hover:bg-p_pink hover:text-white transition flex items-center justify-center border border-p_pink_light shadow-sm z-10" aria-label="ปิด">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            
+            <div class="bg-gradient-to-r from-p_pink_light/40 to-p_yellow/40 p-3.5 rounded-2xl mb-3 border border-p_pink_light flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center text-p_pink_dark shadow-sm border border-p_pink_light">
+                    <i class="fa-solid fa-clock text-xl animate-pulse"></i>
+                </div>
+                <div>
+                    <h3 class="font-cute text-lg font-bold text-p_pink_dark leading-tight">รายการคิวงานปัจจุบัน</h3>
+                    <p class="font-cute text-[11px] text-gray-500">อัปเดตสถานะงานของคุณที่นี่ค่ะ 💕</p>
+                </div>
+            </div>
+
+            <!-- 🔍 ช่องค้นหาคิวงาน -->
+            <div class="mb-3.5 relative font-cute">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-p_pink_dark text-xs"></i>
+                <input type="text" id="queue-search-input" oninput="renderPublicQueue()" placeholder="ค้นหาชื่อของคุณ หรือรายการงาน..." 
+                    class="w-full pl-8 pr-8 py-2 bg-white border-2 border-p_pink_light/80 rounded-xl text-xs font-medium text-gray-700 placeholder-gray-400 focus:outline-none focus:border-p_pink shadow-sm transition">
+                <button id="queue-search-clear" onclick="clearQueueSearch()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-p_pink_dark text-xs p-1">
+                    <i class="fa-solid fa-circle-xmark"></i>
+                </button>
+            </div>
+
+            <div id="public-queue-list" class="space-y-3 font-cute text-sm"></div>
+        </div>
+    </div>
+
+    <!-- Modal 2: ฟอร์มส่งรีวิว -->
+    <div id="review-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[24px] w-full max-w-sm p-5 border-2 border-p_pink_light shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('review-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600" aria-label="ปิด"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="font-cute text-lg font-bold text-p_pink_dark mb-1"><i class="fa-solid fa-heart text-p_pink"></i> เขียนรีวิวบริการ</h3>
+            <p class="font-cute text-[11px] text-gray-500 mb-3">รีวิวจะแสดงบนหน้าร้านหลังแอดมินตรวจสอบหลักฐานและอนุมัติแล้ว</p>
+
+            <form id="review-form" onsubmit="submitReview(event)" class="space-y-3 font-cute text-xs">
+                <div>
+                    <label class="block mb-1 font-bold text-gray-600">ชื่อของคุณ:</label>
+                    <input type="text" id="review-name" required maxlength="40" placeholder="ใส่ชื่อของคุณ" class="w-full p-2 border border-p_pink_light rounded-xl focus:outline-none focus:border-p_pink">
+                </div>
+                <div>
+                    <label class="block mb-1 font-bold text-gray-600">ให้คะแนนความพึงพอใจ:</label>
+                    <select id="review-stars" class="w-full p-2 border border-p_pink_light rounded-xl focus:outline-none focus:border-p_pink text-p_yellow_dark font-bold">
+                        <option value="5">★★★★★ (5 ดาว - ประทับใจมาก)</option>
+                        <option value="4">★★★★☆ (4 ดาว - ดีมาก)</option>
+                        <option value="3">★★★☆☆ (3 ดาว - ปานกลาง)</option>
+                        <option value="2">★★☆☆☆ (2 ดาว - พอใช้)</option>
+                        <option value="1">★☆☆☆☆ (1 ดาว - ควรปรับปรุง)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block mb-1 font-bold text-gray-600">ข้อความรีวิว:</label>
+                    <textarea id="review-comment" rows="2" required maxlength="300" placeholder="ความประทับใจเกี่ยวกับบริการ..." class="w-full p-2 border border-p_pink_light rounded-xl focus:outline-none focus:border-p_pink"></textarea>
+                </div>
+                <div>
+                    <label class="block mb-1 font-bold text-gray-600">แนบหลักฐานการสั่งงาน (สลิป/แชท):</label>
+                    <input type="file" id="review-proof" accept="image/*" required class="w-full text-xs text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-p_pink_light file:text-p_pink_dark hover:file:bg-p_pink">
+                </div>
+                <button id="review-submit-btn" type="submit" class="w-full bg-p_pink text-white py-2 rounded-xl font-bold shadow-sm hover:bg-p_pink_dark transition mt-2">
+                    ส่งรีวิวให้แอดมินตรวจสอบ
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal 3: เข้าสู่ระบบและจัดการหลังบ้าน Admin -->
+    <div id="admin-login-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[24px] w-full max-w-sm p-5 border-2 border-p_yellow_dark shadow-2xl relative max-h-[92vh] overflow-y-auto">
+            <button onclick="closeModal('admin-login-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10" aria-label="ปิด"><i class="fa-solid fa-xmark text-xl"></i></button>
+
+            <!-- Admin Panel (แสดงเมื่อล็อกอินแล้ว) -->
+            <div id="admin-panel" class="hidden">
+                <h3 class="font-cute text-lg font-bold text-p_pink_dark mb-3"><i class="fa-solid fa-sliders"></i> ระบบจัดการหลังบ้าน</h3>
+
+                <!-- Tabs -->
+                <div class="grid grid-cols-5 gap-1 mb-4 font-cute text-[10px]">
+                    <button id="tab-btn-shop" onclick="showAdminTab('shop')" class="py-1.5 rounded-full font-bold bg-p_pink_light text-p_pink_dark transition">ร้านค้า</button>
+                    <button id="tab-btn-images" onclick="showAdminTab('images')" class="py-1.5 rounded-full font-bold bg-p_pink_light text-p_pink_dark transition">รูปภาพ</button>
+                    <button id="tab-btn-products" onclick="showAdminTab('products')" class="py-1.5 rounded-full font-bold bg-p_pink_light text-p_pink_dark transition">สินค้า</button>
+                    <button id="tab-btn-queue" onclick="showAdminTab('queue')" class="py-1.5 rounded-full font-bold bg-p_pink_light text-p_pink_dark transition">คิวงาน</button>
+                    <button id="tab-btn-reviews" onclick="showAdminTab('reviews')" class="py-1.5 rounded-full font-bold bg-p_pink_light text-p_pink_dark transition">
+                        รีวิว <span id="tab-pending-count" class="hidden ml-0.5 bg-red-500 text-white rounded-full px-1 text-[9px]">0</span>
+                    </button>
+                </div>
+
+                <!-- Tab: ร้านค้า (แก้ไขรายละเอียดร้าน & สถานะเปิด/ปิด) -->
+                <div id="tab-shop" class="space-y-3 font-cute text-xs">
+                    <div class="bg-p_bg p-3 rounded-xl border border-p_pink_light space-y-2">
+                        <p class="font-bold text-gray-700"><i class="fa-solid fa-door-open"></i> สถานะร้านค้า (Open/Close)</p>
+                        <div class="flex items-center gap-3">
+                            <label class="flex items-center gap-1.5 cursor-pointer font-bold text-green-600">
+                                <input type="radio" name="shop-status" value="open" id="status-open-radio" onchange="updateShopStatus('open')" class="accent-green-500">
+                                🟢 เปิดร้าน (OPEN)
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer font-bold text-red-500">
+                                <input type="radio" name="shop-status" value="close" id="status-close-radio" onchange="updateShopStatus('close')" class="accent-red-500">
+                                🔴 ปิดร้าน (CLOSED)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="bg-p_bg p-3 rounded-xl border border-p_pink_light space-y-2">
+                        <p class="font-bold text-gray-700"><i class="fa-solid fa-pen-to-square"></i> รายละเอียดร้านค้า</p>
+                        <textarea id="admin-shop-info-input" rows="5" class="w-full p-2 border border-p_pink_light rounded-xl focus:outline-none focus:border-p_pink text-xs" placeholder="ข้อความรายละเอียดร้าน..."></textarea>
+                        <button onclick="saveShopInfo()" class="w-full bg-p_pink text-white py-1.5 rounded-xl font-bold hover:bg-p_pink_dark transition">บันทึกรายละเอียดร้าน</button>
+                    </div>
+                </div>
+
+                <!-- Tab: รูปภาพ -->
+                <div id="tab-images" class="hidden space-y-4 font-cute text-xs">
+                    <div class="bg-p_bg p-3 rounded-xl border border-p_pink_light">
+                        <p class="font-bold text-gray-700 mb-2"><i class="fa-solid fa-image"></i> โลโก้ร้าน</p>
+                        <div class="flex items-center gap-3 mb-2">
+                            <div class="w-16 h-16 rounded-full bg-p_yellow border-2 border-p_yellow_dark overflow-hidden flex items-center justify-center flex-shrink-0">
+                                <img id="logo-preview" src="" alt="ตัวอย่างโลโก้" class="w-full h-full object-cover hidden rounded-full">
+                                <i id="logo-preview-icon" class="fa-solid fa-store text-2xl text-p_pink_dark"></i>
+                            </div>
+                            <p class="text-[11px] text-gray-500 leading-snug">เลือกรูปจากอัลบั้ม ระบบจะครอปเป็นวงกลมให้อัตโนมัติ</p>
+                        </div>
+                        <input type="file" id="logo-file" accept="image/*" class="hidden" onchange="pickImage('logo', this)">
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <button onclick="document.getElementById('logo-file').click()" class="bg-white border border-p_pink text-p_pink_dark py-1.5 rounded-xl font-bold hover:bg-p_pink_light transition"><i class="fa-solid fa-images"></i> เลือกจากอัลบั้ม</button>
+                            <button id="logo-save-btn" onclick="saveImage('logo')" disabled class="bg-p_pink text-white py-1.5 rounded-xl font-bold hover:bg-p_pink_dark transition disabled:opacity-40 disabled:cursor-not-allowed">บันทึกโลโก้</button>
+                        </div>
+                        <button onclick="resetImage('logo')" class="mt-1.5 w-full text-[11px] text-gray-400 hover:text-gray-600 underline">ใช้โลโก้เริ่มต้น</button>
+                    </div>
+
+                    <div class="bg-p_bg p-3 rounded-xl border border-p_pink_light">
+                        <p class="font-bold text-gray-700 mb-2"><i class="fa-solid fa-panorama"></i> แบนเนอร์ (1122 × 495 พิกเซล)</p>
+                        <div class="w-full aspect-[1122/495] rounded-xl bg-p_yellow border-2 border-p_yellow_dark overflow-hidden mb-2">
+                            <div id="banner-preview" class="w-full h-full bg-cover bg-center"></div>
+                        </div>
+                        <p class="text-[11px] text-gray-500 leading-snug mb-2">เลือกรูปจากอัลบั้ม ระบบจะครอปและย่อเป็นสัดส่วน 1122 × 495 ให้อัตโนมัติ</p>
+                        <input type="file" id="banner-file" accept="image/*" class="hidden" onchange="pickImage('banner', this)">
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <button onclick="document.getElementById('banner-file').click()" class="bg-white border border-p_yellow_dark text-p_pink_dark py-1.5 rounded-xl font-bold hover:bg-p_yellow transition"><i class="fa-solid fa-images"></i> เลือกจากอัลบั้ม</button>
+                            <button id="banner-save-btn" onclick="saveImage('banner')" disabled class="bg-p_yellow text-p_pink_dark border border-p_yellow_dark py-1.5 rounded-xl font-bold hover:bg-p_yellow_dark transition disabled:opacity-40 disabled:cursor-not-allowed">บันทึกแบนเนอร์</button>
+                        </div>
+                        <button onclick="resetImage('banner')" class="mt-1.5 w-full text-[11px] text-gray-400 hover:text-gray-600 underline">ใช้แบนเนอร์เริ่มต้น</button>
+                    </div>
+                </div>
+
+                <!-- Tab: สินค้า -->
+                <div id="tab-products" class="hidden space-y-2.5 font-cute text-xs">
+                    <p class="text-[11px] text-gray-500 leading-snug">ตั้งค่าสินค้าตัวอย่าง 6 ช่องใต้แบนเนอร์ เลือกรูปจากอัลบั้ม บันทึกและแสดงผลทันที</p>
+                    <input type="file" id="product-file" accept="image/*" class="hidden" onchange="pickProductImage(this)">
+                    <div id="admin-product-list" class="space-y-2.5"></div>
+                </div>
+
+                <!-- Tab: คิวงาน (เพิ่ม/ลดคิว ปรับลำดับคิวขึ้น-ลง) -->
+                <div id="tab-queue" class="hidden space-y-3 font-cute text-xs">
+                    <div class="bg-p_bg p-3 rounded-xl border border-p_pink_light space-y-1.5">
+                        <p class="font-bold text-gray-700"><i class="fa-solid fa-plus"></i> เพิ่มคิวใหม่</p>
+                        <input type="text" id="new-queue-name" maxlength="40" placeholder="ชื่อลูกค้า เช่น คุณ F" class="w-full p-2 border border-p_pink_light rounded-xl focus:outline-none focus:border-p_pink">
+                        <input type="text" id="new-queue-job" maxlength="60" placeholder="งานที่สั่ง เช่น งานป้ายโปรโมชั่น" class="w-full p-2 border border-p_pink_light rounded-xl focus:outline-none focus:border-p_pink">
+                        <select id="new-queue-status" class="w-full p-2 border border-p_pink_light rounded-xl focus:outline-none focus:border-p_pink"></select>
+                        <button onclick="addQueue()" class="w-full bg-p_pink text-white py-1.5 rounded-xl font-bold hover:bg-p_pink_dark transition">เพิ่มคิว</button>
+                    </div>
+                    <div id="admin-queue-list" class="space-y-2.5"></div>
+                </div>
+
+                <!-- Tab: รีวิว -->
+                <div id="tab-reviews" class="hidden space-y-4 font-cute text-xs">
+                    <div>
+                        <p class="font-bold text-gray-700 mb-2"><i class="fa-solid fa-hourglass-half text-p_yellow_dark"></i> รออนุมัติ</p>
+                        <div id="admin-pending-list" class="space-y-2.5"></div>
+                    </div>
+                    <div>
+                        <p class="font-bold text-gray-700 mb-2"><i class="fa-solid fa-circle-check text-green-500"></i> อนุมัติแล้ว (แสดงบนหน้าร้าน)</p>
+                        <div id="admin-approved-list" class="space-y-2.5"></div>
+                    </div>
+                </div>
+
+                <button onclick="logoutAdmin()" class="mt-4 w-full bg-gray-200 text-gray-600 py-1.5 rounded-xl font-bold font-cute text-xs hover:bg-gray-300 transition">
+                    ออกจากระบบ
+                </button>
+            </div>
+
+            <!-- Login Form -->
+            <div id="admin-login-form">
+                <h3 class="font-cute text-lg font-bold text-p_pink_dark mb-3 text-center"><i class="fa-solid fa-lock"></i> เข้าสู่ระบบหลังบ้าน (Admin)</h3>
+
+                <form onsubmit="handleAdminLogin(event)" class="space-y-3 font-cute text-xs">
+                    <div>
+                        <label class="block mb-1 font-bold text-gray-600">อีเมลแอดมิน (Email):</label>
+                        <input type="email" id="admin-email" required autocomplete="username" placeholder="admin@shop.com" class="w-full p-2 border border-p_pink_light rounded-xl focus:outline-none focus:border-p_pink">
+                    </div>
+                    <div>
+                        <label class="block mb-1 font-bold text-gray-600">รหัสผ่าน (Password):</label>
+                        <input type="password" id="admin-password" required autocomplete="current-password" placeholder="••••••••" class="w-full p-2 border border-p_pink_light rounded-xl focus:outline-none focus:border-p_pink">
+                    </div>
+                    <p id="admin-login-error" class="hidden text-red-500 font-bold text-center">อีเมลหรือรหัสผ่านไม่ถูกต้อง</p>
+                    <button type="submit" class="w-full bg-p_pink text-white py-2 rounded-xl font-bold shadow-sm hover:bg-p_pink_dark transition">
+                        เข้าสู่ระบบ
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: ดูรูปหลักฐานขนาดเต็ม -->
+    <div id="proof-modal" class="fixed inset-0 bg-black/70 z-[60] hidden flex items-center justify-center p-4" onclick="closeModal('proof-modal')">
+        <img id="proof-modal-img" src="" alt="หลักฐานจากลูกค้า" class="max-w-full max-h-[85vh] rounded-xl shadow-2xl bg-white">
+    </div>
+
+    <!-- Modal 5: ดูสินค้าตัวอย่าง -->
+    <div id="product-modal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4" onclick="closeModal('product-modal')">
+        <div class="bg-white rounded-[24px] w-full max-w-sm p-4 border-2 border-p_pink_light shadow-2xl relative" onclick="event.stopPropagation()">
+            <button onclick="closeModal('product-modal')" class="absolute top-6 right-6 w-8 h-8 rounded-full bg-white/90 shadow text-gray-500 hover:text-gray-700" aria-label="ปิด"><i class="fa-solid fa-xmark"></i></button>
+            <img id="product-modal-img" src="" alt="" class="w-full aspect-square object-cover rounded-2xl border border-p_pink_light bg-p_bg">
+            <h3 id="product-modal-name" class="font-cute text-lg font-bold text-p_pink_dark mt-3"></h3>
+            <p id="product-modal-price" class="font-cute text-sm text-gray-600"></p>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[70] hidden max-w-[90%] bg-gray-800 text-white font-cute text-xs px-4 py-2.5 rounded-full shadow-xl"></div>
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
+    <script>
+        /* =====================================================================
+         * ตั้งค่าแอดมิน & Cloud Storage Endpoint
+         * ===================================================================== */
+        const ADMIN_EMAIL = 'mean13ayu@gmail.com';
+        const ADMIN_PASS_HASH = '9e7069be45284d7f3fa752f12fdbd2cd874657a5cc30eb495778472f8c19cada';
+        
+        // คีย์สำหรับการบันทึกและ Sync ข้อมูล
+        const STORAGE_KEY = 'miori_shop_data_v2';
+        const DEFAULT_BANNER = 'https://placehold.co/1122x495/FFD1DC/E07A5F?text=Banner+1122x495+Pixel';
+
+        /* ---------- SHA-256 ---------- */
+        function sha256Hex(msg) {
+            const rrot = (v, a) => (v >>> a) | (v << (32 - a));
+            const bytes = Array.from(new TextEncoder().encode(msg));
+            const K = [], H = [];
+            const isPrime = n => { for (let i = 2; i * i <= n; i++) if (n % i === 0) return false; return true; };
+            for (let n = 2; K.length < 64; n++) {
+                if (isPrime(n)) {
+                    if (H.length < 8) H.push(((Math.pow(n, 1 / 2) % 1) * 4294967296) | 0);
+                    K.push(((Math.pow(n, 1 / 3) % 1) * 4294967296) | 0);
+                }
+            }
+            const bitLen = bytes.length * 8;
+            bytes.push(0x80);
+            while (bytes.length % 64 !== 56) bytes.push(0);
+            const hi = Math.floor(bitLen / 4294967296), lo = bitLen >>> 0;
+            [hi, lo].forEach(v => { bytes.push((v >>> 24) & 255, (v >>> 16) & 255, (v >>> 8) & 255, v & 255); });
+            const w = new Array(64);
+            for (let o = 0; o < bytes.length; o += 64) {
+                for (let i = 0; i < 16; i++) {
+                    w[i] = (bytes[o + 4 * i] << 24) | (bytes[o + 4 * i + 1] << 16) | (bytes[o + 4 * i + 2] << 8) | bytes[o + 4 * i + 3];
+                }
+                for (let i = 16; i < 64; i++) {
+                    const s0 = rrot(w[i - 15], 7) ^ rrot(w[i - 15], 18) ^ (w[i - 15] >>> 3);
+                    const s1 = rrot(w[i - 2], 17) ^ rrot(w[i - 2], 19) ^ (w[i - 2] >>> 10);
+                    w[i] = (w[i - 16] + s0 + w[i - 7] + s1) | 0;
+                }
+                let [a, b, c, d, e, f, g, h] = H;
+                for (let i = 0; i < 64; i++) {
+                    const S1 = rrot(e, 6) ^ rrot(e, 11) ^ rrot(e, 25);
+                    const ch = (e & f) ^ (~e & g);
+                    const t1 = (h + S1 + ch + K[i] + w[i]) | 0;
+                    const S0 = rrot(a, 2) ^ rrot(a, 13) ^ rrot(a, 22);
+                    const maj = (a & b) ^ (a & c) ^ (b & c);
+                    const t2 = (S0 + maj) | 0;
+                    h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+                }
+                const v = [a, b, c, d, e, f, g, h];
+                for (let i = 0; i < 8; i++) H[i] = (H[i] + v[i]) | 0;
+            }
+            return H.map(x => (x >>> 0).toString(16).padStart(8, '0')).join('');
+        }
+
+        const STATUSES = [
+            { key: 'wait',   label: 'รอบรีฟ',     pct: 0,   bar: 'from-pink-100 to-pink-200', badge: 'bg-pink-50 text-pink-400 border-pink-200' },
+            { key: 'briefed', label: 'บรีฟแล้ว',   pct: 25,  bar: 'from-pink-200 to-p_pink_light', badge: 'bg-pink-50 text-pink-500 border-pink-300' },
+            { key: 'doing',  label: 'กำลังทำ',    pct: 50,  bar: 'from-p_pink_light to-p_pink', badge: 'bg-rose-50 text-p_pink_dark border-p_pink' },
+            { key: 'check',  label: 'รอเช็คงาน',  pct: 75,  bar: 'from-p_pink to-rose-400', badge: 'bg-rose-100 text-rose-600 border-rose-300' },
+            { key: 'done',   label: 'ส่งงานแล้ว', pct: 100, bar: 'from-rose-400 to-p_pink_dark', badge: 'bg-rose-100 text-p_pink_dark border-p_pink_dark' }
+        ];
+
+        function defaultData() {
+            return {
+                shopStatus: 'open',
+                shopInfo: 'ร้านมิโอริ ยินดีต้อนรับค่า\nบริการรับทำเว็บไซต์ร้านค้า\nรับทำลายน้ำเริ่มต้น 39+\nรับทำป้าย 59+\nสอบถามรายละเอียดเพิ่มเติมทักได้เลยน้า',
+                logo: null,
+                banner: null,
+                products: Array.from({ length: 6 }, (_, i) => ({ img: null, name: `สินค้าตัวอย่าง ${i + 1}`, price: '' })),
+                queue: [
+                    { id: 'q1', name: 'คุณ A', job: 'งานป้ายโปรโมชั่น', status: 'wait' },
+                    { id: 'q2', name: 'คุณ B', job: 'งานตกแต่งโปรไฟล์', status: 'briefed' },
+                    { id: 'q3', name: 'คุณ C', job: 'งานโลโก้', status: 'doing' },
+                    { id: 'q4', name: 'คุณ D', job: 'งานป้ายร้าน', status: 'check' },
+                    { id: 'q5', name: 'คุณ E', job: 'งานสติกเกอร์', status: 'done' }
+                ],
+                reviews: [
+                    { id: 'r1', name: 'คุณเมย์', stars: 5, comment: 'งานสวยมากกก ตรงบรีฟ น่ารักสุดๆ ส่งงานตรงเวลาด้วยค่ะ 💕', proof: null, status: 'approved', createdAt: 0 }
+                ]
+            };
+        }
+
+        let db = loadData();
+        let isAdmin = false;
+        const pendingImages = { logo: null, banner: null };
+
+        // โหลดข้อมูลและ Sync ระหว่างเบราว์เซอร์
+        function loadData() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    const data = Object.assign(defaultData(), JSON.parse(raw));
+                    if (!Array.isArray(data.products) || data.products.length !== 6) data.products = defaultData().products;
+                    return data;
+                }
+            } catch (e) { }
+            return defaultData();
+        }
+
+        function saveData() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+                updateQueueBadgeCount();
+                renderShopInfo();
+                return true;
+            } catch (e) {
+                showToast('บันทึกไม่สำเร็จ: รูปภาพขนาดใหญ่เกินขีดจำกัดของเบราว์เซอร์');
+                return false;
+            }
+        }
+
+        // ฟัง Event สำหรับ Sync ข้อมูลเมื่อมีการแก้ไขจากเครื่อง/แท็บอื่น
+        window.addEventListener('storage', (e) => {
+            if (e.key === STORAGE_KEY) {
+                db = loadData();
+                init();
+            }
+        });
+
+        function uid(prefix) {
+            return prefix + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+        }
+
+        function esc(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        function statusOf(key) {
+            return STATUSES.find(s => s.key === key) || STATUSES[0];
+        }
+
+        function statusOptions(selected) {
+            return STATUSES.map(s =>
+                `<option value="${s.key}" ${s.key === selected ? 'selected' : ''}>${s.pct}% - ${s.label}</option>`
+            ).join('');
+        }
+
+        /* ---------- Toast / Modal ---------- */
+        let toastTimer = null;
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.remove('hidden');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => t.classList.add('hidden'), 3200);
+        }
+
+        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        function showProof(src) {
+            if (!src) return;
+            document.getElementById('proof-modal-img').src = src;
+            openModal('proof-modal');
+        }
+
+        /* ---------- 🏪 ข้อมูลร้านค้า & Open/Close ---------- */
+        function renderShopInfo() {
+            // แสดงข้อมูลรายละเอียด
+            document.getElementById('shop-info-display').textContent = db.shopInfo || '';
+            
+            // ป้ายสถานะ Open/Close
+            const badge = document.getElementById('shop-status-badge');
+            const dot = document.getElementById('shop-status-dot');
+            const text = document.getElementById('shop-status-text');
+
+            if (db.shopStatus === 'close') {
+                badge.className = 'absolute bottom-0 right-0 bg-red-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-sm flex items-center gap-1';
+                dot.className = 'w-1.5 h-1.5 rounded-full bg-white';
+                text.textContent = 'CLOSED';
+            } else {
+                badge.className = 'absolute bottom-0 right-0 bg-green-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full border-2 border-white shadow-sm flex items-center gap-1';
+                dot.className = 'w-1.5 h-1.5 rounded-full bg-white animate-ping';
+                text.textContent = 'OPEN';
+            }
+        }
+
+        function updateShopStatus(status) {
+            if (!isAdmin) return;
+            db.shopStatus = status;
+            saveData();
+            showToast(status === 'open' ? 'เปลี่ยนสถานะเป็น: เปิดร้าน (OPEN)' : 'เปลี่ยนสถานะเป็น: ปิดร้าน (CLOSED)');
+        }
+
+        function saveShopInfo() {
+            if (!isAdmin) return;
+            const val = document.getElementById('admin-shop-info-input').value.trim();
+            db.shopInfo = val;
+            saveData();
+            showToast('บันทึกรายละเอียดร้านค้าแล้ว');
+        }
+
+        /* ---------- 🎵 เพลง (YouTube) ---------- */
+        const YT_VIDEO_ID = 'Nqz4oh2jogE';
+        let ytPlayer = null;
+        let ytReady = false;
+        let ytWantPlay = false;
+
+        const musicIcon = document.getElementById('music-icon');
+
+        function setMusicUI(playing) {
+            musicIcon.classList.toggle('animate-spin-slow', playing);
+        }
+
+        function onYouTubeIframeAPIReady() {
+            ytPlayer = new YT.Player('yt-player', {
+                height: '1',
+                width: '1',
+                videoId: YT_VIDEO_ID,
+                playerVars: { autoplay: 0, controls: 0, loop: 1, playlist: YT_VIDEO_ID },
+                events: {
+                    onReady: () => {
+                        ytReady = true;
+                        if (ytWantPlay) ytPlayer.playVideo();
+                    },
+                    onStateChange: (e) => {
+                        if (e.data === YT.PlayerState.PLAYING) setMusicUI(true);
+                        else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) setMusicUI(false);
+                    },
+                    onError: () => {
+                        setMusicUI(false);
+                        showToast('เปิดเพลงไม่ได้ ลองกดอีกครั้ง');
+                    }
+                }
+            });
+        }
+
+        function toggleMusic() {
+            if (!ytReady || !ytPlayer) {
+                ytWantPlay = true;
+                showToast('กำลังโหลดเพลง รอสักครู่แล้วกดอีกครั้งนะคะ');
+                return;
+            }
+            const state = ytPlayer.getPlayerState();
+            if (state === YT.PlayerState.PLAYING) {
+                ytPlayer.pauseVideo();
+            } else {
+                ytPlayer.playVideo();
+            }
+        }
+
+        /* ---------- ประมวลผลรูปภาพ (บีบอัดเพื่อให้แชร์ข้ามเครื่องได้เสถียร) ---------- */
+        function processImage(file, opts) {
+            return new Promise((resolve, reject) => {
+                if (!file || !file.type.startsWith('image/')) return reject(new Error('ไฟล์ที่เลือกไม่ใช่รูปภาพ'));
+                if (file.size > 15 * 1024 * 1024) return reject(new Error('ไฟล์ใหญ่เกิน 15 MB'));
+                const url = URL.createObjectURL(file);
+                const img = new Image();
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    let sw = img.naturalWidth, sh = img.naturalHeight, sx = 0, sy = 0, dw, dh;
+                    if (opts.cropW) {
+                        const target = opts.cropW / opts.cropH;
+                        if (sw / sh > target) { const nw = sh * target; sx = (sw - nw) / 2; sw = nw; }
+                        else { const nh = sw / target; sy = (sh - nh) / 2; sh = nh; }
+                        dw = opts.cropW; dh = opts.cropH;
+                    } else {
+                        const scale = Math.min(1, opts.max / Math.max(sw, sh));
+                        dw = Math.round(sw * scale); dh = Math.round(sh * scale);
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = dw; canvas.height = dh;
+                    const ctx = canvas.getContext('2d');
+                    if (opts.type === 'image/jpeg') { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, dw, dh); }
+                    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh);
+                    resolve(canvas.toDataURL(opts.type, opts.quality));
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('เปิดรูปนี้ไม่ได้ ลองเลือกรูปอื่น')); };
+                img.src = url;
+            });
+        }
+
+        const IMAGE_OPTS = {
+            logo:   { cropW: 300,  cropH: 300, type: 'image/jpeg',  quality: 0.80 },
+            banner: { cropW: 800,  cropH: 352, type: 'image/jpeg', quality: 0.75 },
+            proof:  { max: 700, type: 'image/jpeg', quality: 0.70 },
+            product: { cropW: 400, cropH: 400, type: 'image/jpeg', quality: 0.75 }
+        };
+
+        /* ---------- 🖼️ โลโก้ / แบนเนอร์ ---------- */
+        function applyImages() {
+            const logoImg = document.getElementById('logo-image-display');
+            const logoIcon = document.getElementById('logo-icon-default');
+            if (db.logo) {
+                logoImg.src = db.logo; logoImg.classList.remove('hidden'); logoIcon.classList.add('hidden');
+            } else {
+                logoImg.removeAttribute('src'); logoImg.classList.add('hidden'); logoIcon.classList.remove('hidden');
+            }
+            document.getElementById('banner-bg').style.backgroundImage = `url('${db.banner || DEFAULT_BANNER}')`;
+            refreshImagePreviews();
+        }
+
+        function refreshImagePreviews() {
+            const logoSrc = pendingImages.logo || db.logo;
+            const lp = document.getElementById('logo-preview');
+            const lpIcon = document.getElementById('logo-preview-icon');
+            if (logoSrc) { lp.src = logoSrc; lp.classList.remove('hidden'); lpIcon.classList.add('hidden'); }
+            else { lp.removeAttribute('src'); lp.classList.add('hidden'); lpIcon.classList.remove('hidden'); }
+
+            const bannerSrc = pendingImages.banner || db.banner || DEFAULT_BANNER;
+            document.getElementById('banner-preview').style.backgroundImage = `url('${bannerSrc}')`;
+
+            document.getElementById('logo-save-btn').disabled = !pendingImages.logo;
+            document.getElementById('banner-save-btn').disabled = !pendingImages.banner;
+        }
+
+        async function pickImage(kind, input) {
+            const file = input.files && input.files[0];
+            input.value = '';
+            if (!file) return;
+            try {
+                pendingImages[kind] = await processImage(file, IMAGE_OPTS[kind]);
+                refreshImagePreviews();
+                showToast('เลือกรูปแล้ว ตรวจตัวอย่างและกดบันทึก');
+            } catch (err) {
+                showToast(err.message);
+            }
+        }
+
+        function saveImage(kind) {
+            if (!isAdmin || !pendingImages[kind]) return;
+            const previous = db[kind];
+            db[kind] = pendingImages[kind];
+            if (!saveData()) { db[kind] = previous; return; }
+            pendingImages[kind] = null;
+            applyImages();
+            showToast(kind === 'logo' ? 'อัปเดตโลโก้เรียบร้อย' : 'อัปเดตแบนเนอร์เรียบร้อย');
+        }
+
+        function resetImage(kind) {
+            if (!isAdmin) return;
+            pendingImages[kind] = null;
+            db[kind] = null;
+            saveData();
+            applyImages();
+            showToast('กลับไปใช้รูปเริ่มต้นแล้ว');
+        }
+
+        /* ---------- 🛍️ ตัวอย่างสินค้า 6 ช่อง ---------- */
+        const PRODUCT_PLACEHOLDER_BG = ['bg-p_pink_light', 'bg-p_yellow', 'bg-p_pink'];
+        let productPickIndex = null;
+
+        function renderProducts() {
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = db.products.map((p, i) => {
+                const media = p.img
+                    ? `<img src="${p.img}" alt="${esc(p.name)}" class="w-full h-full object-cover">`
+                    : '<i class="fa-solid fa-image text-2xl text-p_pink_dark opacity-70"></i>';
+                const click = p.img ? `onclick="openProduct(${i})"` : '';
+                return `
+                    <div ${click} class="bg-white rounded-[16px] p-2 text-center pop-card shadow-pop flex flex-col border border-p_pink_light ${p.img ? 'cursor-pointer' : ''}">
+                        <div class="${PRODUCT_PLACEHOLDER_BG[i % 3]} rounded-lg aspect-square mb-1.5 flex items-center justify-center overflow-hidden">${media}</div>
+                        <h4 class="font-cute font-bold text-p_pink_dark text-[10px] leading-tight truncate">${esc(p.name)}</h4>
+                        ${p.price ? `<p class="font-cute text-[10px] text-gray-500 mt-0.5 truncate">${esc(p.price)}</p>` : ''}
+                    </div>`;
+            }).join('');
+        }
+
+        function openProduct(i) {
+            const p = db.products[i];
+            if (!p || !p.img) return;
+            document.getElementById('product-modal-img').src = p.img;
+            document.getElementById('product-modal-img').alt = p.name;
+            document.getElementById('product-modal-name').textContent = p.name;
+            document.getElementById('product-modal-price').textContent = p.price || '';
+            openModal('product-modal');
+        }
+
+        function renderAdminProducts() {
+            const box = document.getElementById('admin-product-list');
+            box.innerHTML = db.products.map((p, i) => `
+                <div class="bg-p_bg p-2.5 rounded-xl border border-p_pink_light flex gap-2.5 items-start">
+                    <div class="w-16 h-16 rounded-lg bg-p_yellow border border-p_yellow_dark overflow-hidden flex items-center justify-center flex-shrink-0">
+                        ${p.img ? `<img src="${p.img}" alt="" class="w-full h-full object-cover">` : '<i class="fa-solid fa-image text-xl text-p_pink_dark opacity-70"></i>'}
+                    </div>
+                    <div class="flex-1 min-w-0 space-y-1.5">
+                        <input type="text" value="${esc(p.name)}" maxlength="30" aria-label="ชื่อสินค้าช่องที่ ${i + 1}"
+                            onchange="updateProductField(${i}, 'name', this.value)"
+                            class="w-full p-1.5 border border-p_pink_light rounded-lg focus:outline-none focus:border-p_pink text-xs font-bold" placeholder="ชื่อสินค้า">
+                        <input type="text" value="${esc(p.price)}" maxlength="20" aria-label="ราคาสินค้าช่องที่ ${i + 1}"
+                            onchange="updateProductField(${i}, 'price', this.value)"
+                            class="w-full p-1.5 border border-p_pink_light rounded-lg focus:outline-none focus:border-p_pink text-xs" placeholder="ราคา เช่น 39.-">
+                        <div class="flex gap-1.5">
+                            <button onclick="triggerProductPick(${i})" class="flex-1 bg-white border border-p_pink text-p_pink_dark py-1 rounded-lg font-bold text-[11px] hover:bg-p_pink_light transition">เลือกรูป</button>
+                            ${p.img ? `<button onclick="clearProductImage(${i})" class="px-2 bg-gray-100 text-gray-500 py-1 rounded-lg text-[11px] hover:bg-gray-200 transition">ลบรูป</button>` : ''}
+                        </div>
+                    </div>
+                </div>`).join('');
+        }
+
+        function updateProductField(i, field, val) {
+            if (!isAdmin) return;
+            db.products[i][field] = val.trim();
+            saveData();
+            renderProducts();
+        }
+
+        function triggerProductPick(i) {
+            productPickIndex = i;
+            document.getElementById('product-file').click();
+        }
+
+        async function pickProductImage(input) {
+            const file = input.files && input.files[0];
+            input.value = '';
+            if (!file || productPickIndex === null) return;
+            try {
+                db.products[productPickIndex].img = await processImage(file, IMAGE_OPTS.product);
+                saveData();
+                renderProducts();
+                renderAdminProducts();
+                showToast(`เปลี่ยนรูปสินค้าช่องที่ ${productPickIndex + 1} แล้ว`);
+            } catch (err) {
+                showToast(err.message);
+            }
+        }
+
+        function clearProductImage(i) {
+            if (!isAdmin) return;
+            db.products[i].img = null;
+            saveData();
+            renderProducts();
+            renderAdminProducts();
+            showToast(`ลบรูปสินค้าช่องที่ ${i + 1} แล้ว`);
+        }
+
+        /* ---------- 📋 คิวงาน (เพิ่ม/ลบ/ปรับเลื่อนลำดับคิว) ---------- */
+        function updateQueueBadgeCount() {
+            const count = db.queue.length;
+            document.getElementById('queue-badge-count').textContent = `${count} คิว`;
+        }
+
+        function openQueue() {
+            renderPublicQueue();
+            openModal('queue-modal');
+        }
+
+        function clearQueueSearch() {
+            const input = document.getElementById('queue-search-input');
+            input.value = '';
+            renderPublicQueue();
+        }
+
+        function renderPublicQueue() {
+            const input = document.getElementById('queue-search-input');
+            const clearBtn = document.getElementById('queue-search-clear');
+            const query = input ? input.value.trim().toLowerCase() : '';
+            if (clearBtn) clearBtn.classList.toggle('hidden', query === '');
+
+            const list = document.getElementById('public-queue-list');
+            const filtered = db.queue.filter(q =>
+                !query || q.name.toLowerCase().includes(query) || q.job.toLowerCase().includes(query)
+            );
+
+            if (filtered.length === 0) {
+                list.innerHTML = `<div class="text-center text-gray-400 py-6">${query ? 'ไม่พบคิวที่ตรงกับคำค้นหา' : 'ยังไม่มีคิวงานในขณะนี้'}</div>`;
+                return;
+            }
+
+            list.innerHTML = filtered.map((q, idx) => {
+                const st = statusOf(q.status);
+                return `
+                    <div class="bg-white p-3 rounded-2xl border border-p_pink_light shadow-sm space-y-2">
+                        <div class="flex justify-between items-start gap-2">
+                            <div>
+                                <span class="font-bold text-gray-800 text-sm">คิวที่ ${idx + 1}: ${esc(q.name)}</span>
+                                <p class="text-xs text-gray-500 mt-0.5">${esc(q.job)}</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold border ${st.badge}">${st.label}</span>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] text-gray-400 font-bold mb-1">
+                                <span>ความคืบหน้า</span>
+                                <span>${st.pct}%</span>
+                            </div>
+                            <div class="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden border border-gray-100 p-0.5">
+                                <div class="h-full rounded-full bg-gradient-to-r ${st.bar} transition-all duration-500" style="width: ${st.pct}%"></div>
+                            </div>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        function renderAdminQueue() {
+            const select = document.getElementById('new-queue-status');
+            select.innerHTML = statusOptions('wait');
+
+            const list = document.getElementById('admin-queue-list');
+            if (db.queue.length === 0) {
+                list.innerHTML = '<p class="text-center text-gray-400 py-4">ไม่มีรายการคิว</p>';
+                return;
+            }
+
+            list.innerHTML = db.queue.map((q, index) => `
+                <div class="bg-p_bg p-2.5 rounded-xl border border-p_pink_light space-y-1.5">
+                    <div class="flex justify-between items-center gap-1">
+                        <span class="font-bold text-p_pink_dark text-xs">#${index + 1}</span>
+                        <input type="text" value="${esc(q.name)}" aria-label="ชื่อลูกค้า"
+                            onchange="updateQueueItem('${q.id}', 'name', this.value)"
+                            class="p-1 border border-p_pink_light rounded-lg font-bold text-xs flex-1 focus:outline-none focus:border-p_pink">
+                        
+                        <!-- ปุ่มปรับลำดับ เลื่อนขึ้น/ลง -->
+                        <div class="flex items-center gap-0.5">
+                            <button onclick="moveQueue('${q.id}', -1)" ${index === 0 ? 'disabled class="opacity-30 p-1 text-gray-400"' : 'class="p-1 text-p_pink_dark hover:bg-p_pink_light rounded"'} title="เลื่อนขึ้น"><i class="fa-solid fa-arrow-up"></i></button>
+                            <button onclick="moveQueue('${q.id}', 1)" ${index === db.queue.length - 1 ? 'disabled class="opacity-30 p-1 text-gray-400"' : 'class="p-1 text-p_pink_dark hover:bg-p_pink_light rounded"'} title="เลื่อนลง"><i class="fa-solid fa-arrow-down"></i></button>
+                            <button onclick="deleteQueue('${q.id}')" class="text-red-400 hover:text-red-600 p-1 ml-1" aria-label="ลบคิว" title="ลบคิว"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                    <input type="text" value="${esc(q.job)}" aria-label="รายละเอียดงาน"
+                        onchange="updateQueueItem('${q.id}', 'job', this.value)"
+                        class="w-full p-1 border border-p_pink_light rounded-lg text-xs focus:outline-none focus:border-p_pink">
+                    <select onchange="updateQueueItem('${q.id}', 'status', this.value)" aria-label="สถานะงาน"
+                        class="w-full p-1 border border-p_pink_light rounded-lg text-xs focus:outline-none focus:border-p_pink">
+                        ${statusOptions(q.status)}
+                    </select>
+                </div>`).join('');
+        }
+
+        function addQueue() {
+            if (!isAdmin) return;
+            const nameEl = document.getElementById('new-queue-name');
+            const jobEl = document.getElementById('new-queue-job');
+            const statusEl = document.getElementById('new-queue-status');
+
+            const name = nameEl.value.trim();
+            const job = jobEl.value.trim();
+            if (!name || !job) { showToast('กรุณากรอกชื่อลูกค้าและรายการงาน'); return; }
+
+            db.queue.push({ id: uid('q'), name, job, status: statusEl.value });
+            saveData();
+            nameEl.value = ''; jobEl.value = '';
+            renderAdminQueue();
+            renderPublicQueue();
+            showToast('เพิ่มคิวเรียบร้อย');
+        }
+
+        function moveQueue(id, direction) {
+            if (!isAdmin) return;
+            const index = db.queue.findIndex(q => q.id === id);
+            if (index < 0) return;
+            const newIndex = index + direction;
+            if (newIndex < 0 || newIndex >= db.queue.length) return;
+
+            const temp = db.queue[index];
+            db.queue[index] = db.queue[newIndex];
+            db.queue[newIndex] = temp;
+
+            saveData();
+            renderAdminQueue();
+            renderPublicQueue();
+        }
+
+        function updateQueueItem(id, field, val) {
+            if (!isAdmin) return;
+            const item = db.queue.find(q => q.id === id);
+            if (!item) return;
+            item[field] = val.trim();
+            saveData();
+            renderAdminQueue();
+            renderPublicQueue();
+        }
+
+        function deleteQueue(id) {
+            if (!isAdmin) return;
+            db.queue = db.queue.filter(q => q.id !== id);
+            saveData();
+            renderAdminQueue();
+            renderPublicQueue();
+            showToast('ลบคิวแล้ว');
+        }
+
+        /* ---------- ⭐ รีวิว ---------- */
+        function renderApprovedReviews() {
+            const box = document.getElementById('approved-reviews-list');
+            const approved = db.reviews.filter(r => r.status === 'approved');
+
+            if (approved.length === 0) {
+                box.innerHTML = '<p class="text-center text-gray-400 py-4 font-cute text-xs">ยังไม่มีรีวิว มารีวิวคนแรกกันน้า 💕</p>';
+                return;
+            }
+
+            box.innerHTML = approved.map(r => `
+                <div class="bg-p_bg p-3 rounded-2xl border border-p_pink_light space-y-1 font-cute text-xs shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold text-p_pink_dark">${esc(r.name)}</span>
+                        <span class="text-p_yellow_dark tracking-wider">${'★'.repeat(r.stars)}${'☆'.repeat(5 - r.stars)}</span>
+                    </div>
+                    <p class="text-gray-600 leading-snug">${esc(r.comment)}</p>
+                </div>`).join('');
+        }
+
+        async function submitReview(e) {
+            e.preventDefault();
+            const btn = document.getElementById('review-submit-btn');
+            const name = document.getElementById('review-name').value.trim();
+            const stars = parseInt(document.getElementById('review-stars').value, 10);
+            const comment = document.getElementById('review-comment').value.trim();
+            const proofInput = document.getElementById('review-proof');
+            const file = proofInput.files && proofInput.files[0];
+
+            if (!name || !comment || !file) { showToast('กรุณากรอกข้อมูลและแนบหลักฐานให้ครบ'); return; }
+
+            btn.disabled = true;
+            btn.textContent = 'กำลังส่งรีวิว...';
+
+            try {
+                const proofData = await processImage(file, IMAGE_OPTS.proof);
+                db.reviews.unshift({
+                    id: uid('r'),
+                    name, stars, comment,
+                    proof: proofData,
+                    status: 'pending',
+                    createdAt: Date.now()
+                });
+                saveData();
+                document.getElementById('review-form').reset();
+                closeModal('review-modal');
+                updateAdminBadge();
+                showToast('ส่งรีวิวเรียบร้อย รอแอดมินอนุมัตินะคะ 💕');
+            } catch (err) {
+                showToast(err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'ส่งรีวิวให้แอดมินตรวจสอบ';
+            }
+        }
+
+        function updateAdminBadge() {
+            const pendingCount = db.reviews.filter(r => r.status === 'pending').length;
+            const tabBadge = document.getElementById('tab-pending-count');
+
+            if (pendingCount > 0) {
+                tabBadge.textContent = pendingCount; tabBadge.classList.remove('hidden');
+            } else {
+                tabBadge.classList.add('hidden');
+            }
+        }
+
+        function renderAdminReviews() {
+            const pendingBox = document.getElementById('admin-pending-list');
+            const approvedBox = document.getElementById('admin-approved-list');
+
+            const pending = db.reviews.filter(r => r.status === 'pending');
+            const approved = db.reviews.filter(r => r.status === 'approved');
+
+            if (pending.length === 0) {
+                pendingBox.innerHTML = '<p class="text-gray-400 text-[11px]">ไม่มีรีวิวที่รออนุมัติ</p>';
+            } else {
+                pendingBox.innerHTML = pending.map(r => `
+                    <div class="bg-p_bg p-2.5 rounded-xl border border-p_pink_light space-y-1.5">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-p_pink_dark">${esc(r.name)}</span>
+                            <span class="text-p_yellow_dark">${'★'.repeat(r.stars)}</span>
+                        </div>
+                        <p class="text-gray-600">${esc(r.comment)}</p>
+                        ${r.proof ? `<button onclick="showProof('${r.proof}')" class="text-p_pink_dark underline font-bold text-[11px]"><i class="fa-solid fa-receipt"></i> ดูหลักฐาน</button>` : ''}
+                        <div class="flex gap-2 pt-1">
+                            <button onclick="approveReview('${r.id}')" class="flex-1 bg-green-500 text-white py-1 rounded-lg font-bold hover:bg-green-600 transition">อนุมัติ</button>
+                            <button onclick="rejectReview('${r.id}')" class="flex-1 bg-red-400 text-white py-1 rounded-lg font-bold hover:bg-red-500 transition">ปฏิเสธ</button>
+                        </div>
+                    </div>`).join('');
+            }
+
+            if (approved.length === 0) {
+                approvedBox.innerHTML = '<p class="text-gray-400 text-[11px]">ยังไม่มีรีวิวที่อนุมัติ</p>';
+            } else {
+                approvedBox.innerHTML = approved.map(r => `
+                    <div class="bg-p_bg p-2 rounded-xl border border-p_pink_light flex justify-between items-center">
+                        <div class="min-w-0 flex-1 pr-2">
+                            <span class="font-bold text-p_pink_dark">${esc(r.name)}</span>
+                            <span class="text-p_yellow_dark text-[10px] ml-1">${'★'.repeat(r.stars)}</span>
+                            <p class="text-gray-500 truncate text-[11px]">${esc(r.comment)}</p>
+                        </div>
+                        <button onclick="deleteReview('${r.id}')" class="text-red-400 hover:text-red-600 p-1 flex-shrink-0" aria-label="ลบรีวิว"><i class="fa-solid fa-trash"></i></button>
+                    </div>`).join('');
+            }
+        }
+
+        function approveReview(id) {
+            if (!isAdmin) return;
+            const r = db.reviews.find(x => x.id === id);
+            if (!r) return;
+            r.status = 'approved';
+            saveData();
+            renderApprovedReviews();
+            renderAdminReviews();
+            updateAdminBadge();
+            showToast('อนุมัติรีวิวแล้ว');
+        }
+
+        function rejectReview(id) {
+            if (!isAdmin) return;
+            db.reviews = db.reviews.filter(x => x.id !== id);
+            saveData();
+            renderAdminReviews();
+            updateAdminBadge();
+            showToast('ปฏิเสธและลบรีวิวแล้ว');
+        }
+
+        function deleteReview(id) {
+            if (!isAdmin) return;
+            db.reviews = db.reviews.filter(x => x.id !== id);
+            saveData();
+            renderApprovedReviews();
+            renderAdminReviews();
+            updateAdminBadge();
+            showToast('ลบรีวิวเรียบร้อย');
+        }
+
+        /* ---------- 🔑 ระบบ แอดมิน ---------- */
+        function openAdmin() {
+            if (isAdmin) {
+                document.getElementById('admin-login-form').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                showAdminTab('shop');
+            } else {
+                document.getElementById('admin-login-form').classList.remove('hidden');
+                document.getElementById('admin-panel').classList.add('hidden');
+            }
+            openModal('admin-login-modal');
+        }
+
+        function handleAdminLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('admin-email').value.trim().toLowerCase();
+            const pass = document.getElementById('admin-password').value;
+            const err = document.getElementById('admin-login-error');
+
+            if (email === ADMIN_EMAIL && sha256Hex(pass) === ADMIN_PASS_HASH) {
+                isAdmin = true;
+                err.classList.add('hidden');
+                document.getElementById('admin-login-form').classList.add('hidden');
+                document.getElementById('admin-panel').classList.remove('hidden');
+                showAdminTab('shop');
+                showToast('เข้าสู่ระบบสำเร็จ');
+            } else {
+                err.classList.remove('hidden');
+            }
+        }
+
+        function logoutAdmin() {
+            isAdmin = false;
+            closeModal('admin-login-modal');
+            showToast('ออกจากระบบแล้ว');
+        }
+
+        function showAdminTab(tab) {
+            const tabs = ['shop', 'images', 'products', 'queue', 'reviews'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`tab-btn-${t}`);
+                if (t === tab) {
+                    el.classList.remove('hidden');
+                    btn.className = 'py-1.5 rounded-full font-bold bg-p_pink text-white transition';
+                } else {
+                    el.classList.add('hidden');
+                    btn.className = 'py-1.5 rounded-full font-bold bg-p_pink_light text-p_pink_dark transition';
+                }
+            });
+
+            if (tab === 'shop') {
+                document.getElementById('admin-shop-info-input').value = db.shopInfo || '';
+                if (db.shopStatus === 'close') document.getElementById('status-close-radio').checked = true;
+                else document.getElementById('status-open-radio').checked = true;
+            }
+            if (tab === 'images') refreshImagePreviews();
+            if (tab === 'products') renderAdminProducts();
+            if (tab === 'queue') renderAdminQueue();
+            if (tab === 'reviews') renderAdminReviews();
+        }
+
+        /* ---------- เริ่มต้นทำงาน ---------- */
+        function init() {
+            renderShopInfo();
+            applyImages();
+            renderProducts();
+            renderApprovedReviews();
+            updateQueueBadgeCount();
+            updateAdminBadge();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
